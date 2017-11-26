@@ -1,5 +1,6 @@
 package com.github.vdemeester.miniws.controller;
 
+import com.github.vdemeester.miniws.feature.MiniwsFeatures;
 import com.github.vdemeester.miniws.model.Todo;
 import com.github.vdemeester.miniws.service.TodoService;
 import org.slf4j.Logger;
@@ -34,18 +35,26 @@ public class TodoController {
 
     @RequestMapping(method = RequestMethod.GET)
     public @ResponseBody List<Todo> getTodoList() {
-        // TODO Ajouter une condition pour vérifier si TODO_FEATURE est actif ou non
-        LOGGER.debug("Get list of all todos");
-        return todoService.findAll();
+        if (manager.isActive(MiniwsFeatures.TODO_FEATURE)) {
+            LOGGER.debug("Get list of all todos");
+            return todoService.findAll();
+        } else {
+            LOGGER.debug("Feature TODO_FEATURE is disabled");
+            throw new ResourceNotFoundException();
+        }
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     public @ResponseBody Todo getTodo(@PathVariable Integer id) {
-        // TODO Ajouter une condition pour vérifier si TODO_FEATURE est actif ou non
-        LOGGER.debug("Get the todo with id : {}", id);
-        try {
-            return todoService.findOne(id);
-        } catch (IllegalArgumentException e) {
+        if (manager.isActive(MiniwsFeatures.TODO_FEATURE)) {
+            LOGGER.debug("Get the todo with id : {}", id);
+            try {
+                return todoService.findOne(id);
+            } catch (IllegalArgumentException e) {
+                throw new ResourceNotFoundException();
+            }
+        } else {
+            LOGGER.debug("Feature TODO_FEATURE is disabled");
             throw new ResourceNotFoundException();
         }
     }
